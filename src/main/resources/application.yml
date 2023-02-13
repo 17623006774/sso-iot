@@ -1,0 +1,13 @@
+server:
+  port: 9999
+
+
+
+spring:
+  iotdb:
+    username: root
+    password: root
+    ip: localhost
+    port: 6667
+    maxSize: 100
+
