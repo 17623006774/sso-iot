@@ -1,0 +1,465 @@
+﻿<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="20">
+    <title>IOT数据平台</title>
+    <script type="text/javascript" th:src="@{/js/jquery.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/comon0.css}">
+</head>
+<script type="text/javascript">
+	$(document).ready(function(){
+		var html=$(".wrap ul").html()
+		$(".wrap ul").append(html)
+		var ls=$(".wrap li").length/2+1
+		i=0
+		ref = setInterval(function(){
+			i++
+			if(i==ls){
+				i=1
+				$(".wrap ul").css({marginTop:0})
+				$(".wrap ul").animate({marginTop:-'.52'*i+'rem'},1000)
+			}
+	    	$(".wrap ul").animate({marginTop:-'.52'*i+'rem'},1000)
+
+
+		},2400);
+
+
+
+				var html2=$(".adduser ul").html()
+		$(".adduser ul").append(html2)
+		var ls2=$(".adduser li").length/2+1
+		a=0
+		ref = setInterval(function(){
+			a++
+			if(a==ls2){
+				a=1
+				$(".adduser ul").css({marginTop:0})
+				$(".adduser ul").animate({marginTop:-'.5'*a+'rem'},800)
+			}
+	    	$(".adduser ul").animate({marginTop:-'.5'*a+'rem'},800)
+
+
+		},4300);
+
+
+
+
+
+
+
+
+	})
+</script>
+<body>
+    <div class="loading">
+        <div class="loadbox"> <img src="images/loading.gif"> 页面加载中... </div>
+    </div>
+    <div class="head">
+        <h1><img th:src="@{/images/logo.jpg}">IOT数据平台</h1>
+        <div class="weather"><img src="images/weather.png"><span>多云转小雨</span><span>2017-12-30</span></div>
+    </div>
+    <div class="mainbox">
+        <ul class="clearfix">
+            <li>
+                <div class="boxall" style="height: 2.7rem">
+                    <div class="alltitle">数据量化</div>
+
+                    <div class="sycm">
+                        <ul class="clearfix">
+                            <li><h2 th:text="${session.statusCount[0]}"></h2><span>手机开机总量</span></li>
+                            <li><h2 th:text="${session.phones.size()-session.statusCount[0]}"></h2><span>手机关机总量</span></li>
+                            <li ><h2 th:text="${#numbers.formatDecimal(1.0/session.phones.size()*session.statusCount[0],1,'COMMA',2,'POINT')}">%</h2><span>开机占比</span></li>
+                        </ul>
+                        <div style="border-bottom: 1px solid rgba(255,255,255,.1)"></div>
+                        <ul class="clearfix">
+                            <li><h2 th:text="${session.statusCount[1]}"></h2><span>电脑开机总量</span></li>
+                            <li><h2 th:text="${session.computes.size()-session.statusCount[1]}"></h2><span>电脑关机总量</span></li>
+                            <li><h2 th:text="${#numbers.formatDecimal(1.0/session.computes.size()*session.statusCount[1],1,'COMMA',2,'POINT')}">%</h2><span>开机占比</span></li>
+                        </ul>
+
+
+                    </div>
+                    <div class="boxfoot"></div>
+                </div>
+                <div class="boxall" style="height: 2.65rem">
+                    <div class="alltitle">手机端区分比例 - 电量</div>
+                    <div id="echarts3" style="height: 2.2rem; width: 100%;"></div>
+                    <div class="boxfoot"></div>
+                </div>
+                <div class="boxall" style="height: 2.95rem">
+                    <div class="alltitle">PC端区分比例 - 电量</div>
+                    <div id="echarts4" style="height: 2.2rem; width: 100%;"></div>
+                    <div class="boxfoot"></div>
+                </div>
+            </li>
+            <li>
+                <div class="bar">
+                    <div class="barbox">
+                        <ul class="clearfix">
+                            <li class="pulll_left counter" th:text="${session.phones.size()}"></li>
+                            <li class="pulll_left counter" th:text="${session.computes.size()}"></li>
+                        </ul>
+                    </div>
+                    <div class="barbox2">
+                        <ul class="clearfix">
+                            <li class="pulll_left">手机端库存</li>
+                            <li class="pulll_left">电脑端库存</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="map">
+                    <div class="map1"><img src="images/lbx.png"></div>
+                    <div class="map2"><img src="images/jt.png"></div>
+                    <div class="map3"><img src="images/map.png"></div>
+                    <div class="map4" id="map_1"></div>
+                </div>
+            </li>
+            <li>
+                <div class="boxall" style="height:5.2rem">
+                    <div class="alltitle">IOT - 设备平均温度</div>
+
+                    <div class="clearfix" style="position:absolute;display:block;overflow: visible;width: 450px;height: 400px" id="echarts6"></div>
+
+
+
+                    <div class="boxfoot"></div>
+                </div>
+                <div class="boxall" style="height: 3.4rem">
+                    <div class="alltitle">实时检测记录</div>
+                    <div class="wrap">
+                        <ul>
+                            <li th:each="data,scrollStat:${session.scroll}">
+                                <p th:text="${data}"></p>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="boxfoot"></div>
+                </div>
+            </li>
+        </ul>
+ 
+    </div>
+    <div class="back"></div>
+    <script language="JavaScript" src="js/js.js"></script>
+    <script type="text/javascript" src="js/echarts.min.js"></script>
+    <script type="text/javascript" src="js/china.js"></script>
+    <script type="text/javascript" src="js/area_echarts.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            myChart3.resize();
+            myChart6.resize();
+
+        })
+        window.addEventListener("resize", function () {
+
+            myChart3.resize();
+            myChart6.resize();
+
+        });
+    </script>
+    <script type="text/javascript" th:inline="javascript">
+
+        var T = [[${session.t}]]
+        var myChart6 = echarts.init(document.getElementById('echarts6'));
+        option6 = {
+
+            tooltip: {
+                trigger: 'axis'
+            },
+
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            toolbox: {
+                feature: {
+                    saveAsImage: {}
+                }
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                // data: ['一', '二', '三', '四', '五', '六'],
+                data: T[2],
+                axisLine:{
+                    lineStyle:{
+                        color:"#fff"
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine:{
+                    lineStyle:{
+                        color:"#fff"
+                    }
+                }
+            },
+            series: [
+                {
+                    name: 'Phone',
+                    type: 'line',
+                    stack: 'Total',
+                    data: T[0]
+                },
+                {
+                    name: 'Computer',
+                    type: 'line',
+                    stack: 'Total',
+                    data: T[1]
+                },
+
+            ]
+        };
+
+        setTimeout(function () {
+            myChart6.setOption(option6);
+
+        }, 500);
+
+    </script>
+    <script type="text/javascript" th:inline="javascript">
+        var myChart3 = echarts.init(document.getElementById('echarts3'));
+        var plantCap3 =  [[${session.phoneE}]];
+        console.log(plantCap3,plantCap3.length)
+        var datalist11 = [{
+            offset: [56, 48],
+            symbolSize: 110,
+            color: 'rgba(73,188,247,.14)',
+
+        }, {
+
+            offset: [30, 70],
+            symbolSize: 70,
+            color: 'rgba(73,188,247,.14)'
+        }, {
+            offset: [0, 43],
+            symbolSize: 60,
+            color: 'rgba(73,188,247,.14)'
+
+        }, {
+            offset: [93, 30],
+            symbolSize: 70,
+            color: 'rgba(73,188,247,.14)'
+        }, {
+            offset: [26, 19],
+            symbolSize: 65,
+            color: 'rgba(73,188,247,.14)'
+        }, {
+            offset: [75, 75],
+            symbolSize: 60,
+            color: 'rgba(73,188,247,.14)'
+
+        }];
+        console.log(datalist11)
+        var datas11 = [];
+        for (var i = 0; i < plantCap3.length; i++) {
+            var item = plantCap3[i];
+            var itemToStyle = datalist11[i];
+            console.log(itemToStyle)
+            datas11.push({
+                name: item.value + '\n' + item.name,
+                value: itemToStyle.offset,
+                symbolSize: itemToStyle.symbolSize,
+                label: {
+                    normal: {
+                        textStyle: {
+                            fontSize: 14
+                        }
+                    }
+                },
+
+                itemStyle: {
+                    normal: {
+                        color: itemToStyle.color,
+                        opacity: itemToStyle.opacity
+                    }
+                },
+            })
+        }
+        option11 = {
+            grid: {
+                show: false,
+                top: 10,
+                bottom: 10
+            },
+
+            xAxis: [{
+                gridIndex: 0,
+                type: 'value',
+                show: false,
+                min: 0,
+                max: 100,
+                nameLocation: 'middle',
+                nameGap: 5
+            }],
+
+            yAxis: [{
+                gridIndex: 0,
+                min: 0,
+                show: false,
+                max: 100,
+                nameLocation: 'middle',
+                nameGap: 30
+            }],
+            series: [{
+                type: 'scatter',
+                symbol: 'circle',
+                symbolSize: 120,
+                label: {
+                    normal: {
+                        show: true,
+                        formatter: '{b}',
+                        color: '#FFF',
+                        textStyle: {
+                            fontSize: '30'
+                        }
+                    },
+                },
+                itemStyle: {
+                    normal: {
+                        color: '#F30'
+                    }
+                },
+                data: datas11
+            }]
+
+        };
+        myChart3.setOption(option11);
+        $(document).ready(function () {
+            myChart3.resize();
+
+        })
+        window.addEventListener("resize", function () {
+            myChart3.resize();
+        });
+    </script>
+    <script type="text/javascript" th:inline="javascript">
+        var myChart = echarts.init(document.getElementById('echarts4'));
+        var plantCap = [[${session.computerE}]];
+        console.log(plantCap)
+        var datalist = [{
+            offset: [56, 48],
+            symbolSize: 110,
+            color: 'rgba(73,188,247,.14)',
+
+        }, {
+
+            offset: [30, 70],
+            symbolSize: 70,
+            color: 'rgba(73,188,247,.14)'
+        }, {
+            offset: [0, 43],
+            symbolSize: 60,
+            color: 'rgba(73,188,247,.14)'
+
+        }, {
+            offset: [93, 30],
+            symbolSize: 70,
+            color: 'rgba(73,188,247,.14)'
+        }, {
+            offset: [26, 19],
+            symbolSize: 65,
+            color: 'rgba(73,188,247,.14)'
+        }, {
+            offset: [75, 75],
+            symbolSize: 60,
+            color: 'rgba(73,188,247,.14)'
+
+        }];
+
+        var datas = [];
+        for (var i = 0; i < plantCap.length; i++) {
+            var item = plantCap[i];
+            var itemToStyle = datalist[i];
+            datas.push({
+                name: item.value + '\n' + item.name,
+                value: itemToStyle.offset,
+                symbolSize: itemToStyle.symbolSize,
+                label: {
+                    normal: {
+                        textStyle: {
+                            fontSize: 14
+                        }
+                    }
+                },
+
+                itemStyle: {
+                    normal: {
+                        color: itemToStyle.color,
+                        opacity: itemToStyle.opacity
+                    }
+                },
+            })
+        }
+        option = {
+            grid: {
+                show: false,
+                top: 10,
+                bottom: 10
+            },
+
+            xAxis: [{
+                gridIndex: 0,
+                type: 'value',
+                show: false,
+                min: 0,
+                max: 100,
+                nameLocation: 'middle',
+                nameGap: 5
+            }],
+
+            yAxis: [{
+                gridIndex: 0,
+                min: 0,
+                show: false,
+                max: 100,
+                nameLocation: 'middle',
+                nameGap: 30
+            }],
+            series: [{
+                type: 'scatter',
+                symbol: 'circle',
+                symbolSize: 120,
+                label: {
+                    normal: {
+                        show: true,
+                        formatter: '{b}',
+                        color: '#FFF',
+                        textStyle: {
+                            fontSize: '30'
+                        }
+                    },
+                },
+                itemStyle: {
+                    normal: {
+                        color: '#F30'
+                    }
+                },
+                data: datas
+            }]
+
+        };
+        myChart.setOption(option);
+        $(document).ready(function () {
+            myChart.resize();
+
+        })
+        window.addEventListener("resize", function () {
+            myChart.resize();
+        });
+    </script>
+    <script type="text/javascript" th:src="@{/js/jquery.waypoints.min.js}"></script>
+    <script type="text/javascript" th:src="@{/js/jquery.countup.min.js}"></script>
+    <script type="text/javascript">
+        $('.counter').countUp();
+    </script>
+
+</body>
+</html>

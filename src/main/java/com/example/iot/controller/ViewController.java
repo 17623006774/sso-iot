@@ -9,32 +9,27 @@ import com.example.iot.exception.ParamaErrorException;
 import com.example.iot.service.ApiService;
 import com.example.iot.service.IotDBService;
 import com.example.iot.vo.ResponseEntity;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.concurrent.DelayQueue;
 import java.util.stream.Collectors;
 
+@Api(tags = "xx")
 @Controller
 @Slf4j
 public class ViewController {
@@ -49,20 +44,117 @@ public class ViewController {
 
     public static List<Computer> computers;
 
+    public static LinkedList<Iot> queue = new LinkedList();
+
+    // 展示的数据
+    public static List<String> scollData = new ArrayList<>();
+
     @PostConstruct
     public void init(){
         phones = iotDBService.listIotData("phone");
         computers = iotDBService.listIotData("compute");
+        scollData.addAll(phones.subList(0,5).stream().map(x->((Iot)x).convert()).collect(Collectors.toList()));
     }
 
+    // 可视化
     @RequestMapping("/view")
-    @ResponseBody
-    public List<Iot> view(){
+//    @ResponseBody
+    public String view(HttpSession session){
         log.info("phone:{}",phones.size());
         log.info("compute:{}",computers.size());
+        session.setAttribute("phones",phones);
+        session.setAttribute("computes",computers);
+
+        // status  开机关机
+        long startPhoneCount = phones.stream().filter(p -> p.status).count();
+        long startComputerCount = computers.stream().filter(c -> c.status).count();
+        ArrayList<Long> statusCount = new ArrayList<>();
+        statusCount.add(startPhoneCount);
+        statusCount.add(startComputerCount);
+        session.setAttribute("statusCount",statusCount);
+        DecimalFormat format = new DecimalFormat("#.00");
+        // echarts3-4
+        TreeMap<String, Double> phoneEle = phones.stream().collect(Collectors.groupingBy(o -> o.getPhoneType(),
+                TreeMap::new,
+                Collectors.averagingDouble(o -> Double.parseDouble(format.format(o.getEleNumber())))));
+        System.out.println(phoneEle);
+        Set<Map.Entry<String, Double>> entrySet = phoneEle.entrySet();
+        List<Map.Entry<String,Double>> list = new ArrayList<Map.Entry<String,Double>>(entrySet);
+        Collections.sort(list, (entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+        System.out.println(list);
+        ArrayList<Object> PhoneEList = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : list) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("name",entry.getKey());
+            map.put("value",format.format(entry.getValue()));
+            PhoneEList.add(map);
+        }
+        session.setAttribute("phoneE",PhoneEList.subList(0,6));
+
+        TreeMap<String, Double> ComputerEle = computers.stream().collect(Collectors.groupingBy(o -> o.getComputerType(),
+                TreeMap::new,
+                Collectors.averagingDouble(o -> Double.parseDouble(format.format(o.getEleNumber())))));
+        Set<Map.Entry<String, Double>> entrySet1 = ComputerEle.entrySet();
+        List<Map.Entry<String,Double>> list1 = new ArrayList<Map.Entry<String,Double>>(entrySet1);
+        Collections.sort(list1, (entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+        System.out.println(list1.subList(0,6));
+        ArrayList<Object> ComputerList = new ArrayList<>();
+        for (Map.Entry<String, Double> entry : list1) {
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("name",entry.getKey());
+            map.put("value",format.format(entry.getValue()));
+            ComputerList.add(map);
+        }
+        System.out.println();
+        session.setAttribute("computerE",ComputerList.subList(0,6));
+
+        // 温度
+        TreeMap<String, Double> phoneT = phones.stream().collect(Collectors.groupingBy(o -> o.getPhoneType(),
+                TreeMap::new,
+                Collectors.averagingDouble(o -> Double.parseDouble(format.format(o.getTemperature())))));
+        Set<Map.Entry<String, Double>> P1 = phoneT.entrySet();
+        List<Map.Entry<String,Double>> L1 = new ArrayList<Map.Entry<String,Double>>(P1);
+        Collections.sort(L1, (entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+        List Tem = new ArrayList();
+        Tem.add(L1.stream().map(x->format.format(x.getValue())).collect(Collectors.toList()));
+
+        TreeMap<String, Double> ComputerT = computers.stream().collect(Collectors.groupingBy(o -> o.getComputerType(),
+                TreeMap::new,
+                Collectors.averagingDouble(o -> Double.parseDouble(format.format(o.getTemperature())))));
+
+        List<Map.Entry<String,Double>> L2 = new ArrayList<Map.Entry<String,Double>>(ComputerT.entrySet());
+        Collections.sort(L2, (entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()));
+        Tem.add(L2.stream().map(x->format.format(x.getValue())).collect(Collectors.toList()));
+        List names = new ArrayList();
+        for (int i = 0; i < 6; i++) {
+            names.add(L1.get(i).getKey() + "/" + L2.get(i).getKey());
+        }
+        updataData();
+        Tem.add(names);
+
+        session.setAttribute("scroll",scollData);
+        session.setAttribute("t",Tem);
+
+
+
+        // 取数据
+
+
 //        List<Float> collect = phones.stream().map(x -> x.eleNumber).collect(Collectors.toList());
 //        log.info("a:{}",collect);
-        return null;
+        return "index";
+    }
+
+
+    public static void updataData(){
+        int count = 0;
+        if(queue.size() >= 5){
+            scollData.clear();
+            while (count < 5){
+                count++;
+                scollData.add(Objects.requireNonNull(queue.poll()).convert());
+            }
+        }
     }
 
     // 对外提供功能 , 聚合

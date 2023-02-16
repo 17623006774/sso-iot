@@ -5,6 +5,7 @@ import com.example.iot.bean.Computer;
 import com.example.iot.bean.Iot;
 import com.example.iot.bean.Phone;
 import com.example.iot.config.IotDBConfig;
+import com.example.iot.controller.ViewController;
 import com.example.iot.utils.ClassFileds;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,8 @@ public class IotDBService {
 //            System.out.println(values);
             iotDBConfig.insertRecord(deviceName+device,System.currentTimeMillis(),
                     names,values);
+            // 添加队列里，进行展示
+            ViewController.queue.offer(iot);
         }
 
 
