@@ -73,7 +73,7 @@ public class ViewController {
         statusCount.add(startComputerCount);
         session.setAttribute("statusCount",statusCount);
         DecimalFormat format = new DecimalFormat("#.00");
-        // echarts3-4
+        // echarts3-4 电量
         TreeMap<String, Double> phoneEle = phones.stream().collect(Collectors.groupingBy(o -> o.getPhoneType(),
                 TreeMap::new,
                 Collectors.averagingDouble(o -> Double.parseDouble(format.format(o.getEleNumber())))));
@@ -131,8 +131,9 @@ public class ViewController {
         }
         updataData();
         Tem.add(names);
-
+        // 滑动数据
         session.setAttribute("scroll",scollData);
+        // 温度数据
         session.setAttribute("t",Tem);
 
 

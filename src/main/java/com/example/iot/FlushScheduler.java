@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 @Configuration
 @EnableScheduling
 @Slf4j
-@ConditionalOnProperty(name = "data.flush",matchIfMissing = true)
+@ConditionalOnProperty(name = "data.flush",matchIfMissing = false)
 public class FlushScheduler {
 
     @Autowired
