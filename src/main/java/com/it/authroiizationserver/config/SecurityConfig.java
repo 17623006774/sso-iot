@@ -4,8 +4,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 
 /**
  * @date $ $
@@ -26,13 +28,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/login/**", "/oauth/**", "/logout/**")
                 .permitAll()
-
                 .anyRequest()
                 .authenticated()
 
 
                 .and()
-                .formLogin().permitAll();
+                .formLogin()
+                .loginPage("/login")
+                .successForwardUrl("/home")
+                .permitAll()
+                .and()
+                // 多人登录，踢人
+                .sessionManagement()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false);
+
+//        // 自定义开放url过滤器配置--无需鉴权
+//        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http.authorizeRequests();
+//
+//        registry.anyRequest().authenticated().and()
+//                .formLogin()
+//                .loginPage("/login")
+////                .defaultSuccessUrl("/home")
+//                .permitAll()
+//                .and()
+//                .logout().permitAll()
+//                .and()
+//                .csrf().disable()
+//                .httpBasic();
+
     }
 
 
@@ -41,5 +65,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected AuthenticationManager authenticationManager() throws Exception {
         return super.authenticationManager();
+    }
+
+
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring().antMatchers("/css/**","/fonts/**","/img/**","/js/**");
     }
 }

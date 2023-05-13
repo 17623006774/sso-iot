@@ -68,8 +68,7 @@ public class AuthorizationServiceConfig extends AuthorizationServerConfigurerAda
                 .authorizedGrantTypes("authorization_code", "password", "refresh_token")
                 .accessTokenValiditySeconds(60)
                 //是否自动授权
-                .autoApprove(false);
-
+                .autoApprove(true);
     }
 
 
